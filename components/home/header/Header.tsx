@@ -2,7 +2,8 @@
 import { BellIcon } from "@heroicons/react/24/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
-import LogoutButton from "./LogoutButton";
+import Link from "next/link";
+import BasicMenu from "./BasicMenu";
 
 function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -35,6 +36,8 @@ function Header() {
           alt="netflix-header"
         />
 
+        <BasicMenu />
+
         <ul className="hidden space-x-4 md:flex">
           <li className="headerLink">Home</li>
           <li className="headerLink">Tv Shows</li>
@@ -48,9 +51,13 @@ function Header() {
         <MagnifyingGlassIcon className="hidden h-6 w-6 sm:inline" />
         <p className="hidden lg:inline">Kids</p>
         <BellIcon className="h-6 w-6" />
-        {/* <Link href="/account"> */}
-        <LogoutButton />
-        {/* </Link> */}
+        <Link href="/account">
+          <img
+            src="https://rb.gy/g1pwyx"
+            alt="profile-icon"
+            className="cursor-pointer rounded"
+          />
+        </Link>
       </div>
     </header>
   );

@@ -6,6 +6,7 @@ import { modalState } from "@/app/atoms/modalAtom";
 
 function ModalData() {
   const showModal = useRecoilValue(modalState);
+
   return <div>{showModal && <Modal />}</div>;
 }
 

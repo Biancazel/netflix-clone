@@ -6,12 +6,12 @@ function LogoutButton() {
   const { logout } = useAuth();
 
   return (
-    <img
+    <p
+      className="col-span-3 cursor-pointer text-blue-500 hover:underline"
       onClick={logout}
-      src="https://rb.gy/g1pwyx"
-      alt="profile-icon"
-      className="cursor-pointer rounded"
-    />
+    >
+      Sign out of all devices
+    </p>
   );
 }
 

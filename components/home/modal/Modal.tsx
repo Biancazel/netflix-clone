@@ -7,7 +7,16 @@ import { useEffect, useState } from "react";
 import { Movie, Element, Genre } from "@/typings";
 import ReactPlayer from "react-player/lazy";
 import { FaPlay, FaVolumeMute, FaVolumeOff, FaVolumeUp } from "react-icons/fa";
-import { HandThumbUpIcon, PlusIcon } from "@heroicons/react/24/solid";
+import {
+  CheckIcon,
+  HandThumbUpIcon,
+  PlusIcon,
+} from "@heroicons/react/24/solid";
+import { deleteDoc, doc, setDoc } from "firebase/firestore";
+import { db } from "@/firebase";
+import useAuth from "@/hooks/useAuth";
+import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast/headless";
 
 function Modal() {
   const [showModal, setShowModal] = useRecoilState(modalState);
@@ -15,6 +24,8 @@ function Modal() {
   const [trailer, setTrailer] = useState();
   const [genres, setGenres] = useState<Genre[]>([]);
   const [muted, setMuted] = useState(false);
+  const { user } = useAuth();
+  const [addedToList, setAddedToList] = useState(false);
 
   useEffect(() => {
     if (!movie) return;
@@ -43,6 +54,35 @@ function Modal() {
     fetchMovie();
   }, [movie]);
 
+  const handleList = async () => {
+    if (addedToList) {
+      await deleteDoc(
+        doc(db, "customers", user!.uid, "myList", movie?.id.toString()!)
+      );
+
+      toast(
+        `${movie?.title || movie?.original_name} has been removed from My List`,
+        { duration: 8000 }
+      );
+    } else {
+      console.log("over here");
+      try {
+        await setDoc(
+          doc(db, "customers", user!.uid, "myList", movie?.id.toString()!),
+          { ...movie }
+        );
+      } catch (err) {
+        console.error(err);
+      }
+
+      console.log("here");
+      toast(
+        `${movie?.title || movie?.original_name} has been added to My List`,
+        { duration: 8000 }
+      );
+    }
+  };
+
   const handleClose = () => {
     setShowModal(false);
   };
@@ -54,6 +94,7 @@ function Modal() {
       className="fixed !top-7 left-0 right-0 z-50 mx-auto w-full max-w-5xl overflow-hidden overflow-y-scroll rounded-md scrollbar-hide"
     >
       <>
+        <Toaster position="bottom-center" />
         <button
           onClick={handleClose}
           className="modalButton absolute right-5 top-5 !z-40 h-9 w-9 border-none bg-[#181818] hover:bg-[#181818]"
@@ -76,8 +117,12 @@ function Modal() {
                 Play
               </button>
 
-              <button className="modalButton">
-                <PlusIcon className="h-7 w-7" />
+              <button className="modalButton" onClick={handleList}>
+                {addedToList ? (
+                  <CheckIcon className="h-7 w-7" />
+                ) : (
+                  <PlusIcon className="h-7 w-7" />
+                )}
               </button>
 
               <button className="modalButton">
@@ -121,11 +166,6 @@ function Modal() {
                   <span className="text-[gray]">Original language: {` `}</span>
                   {movie?.original_language}
                 </div>
-
-                {/* <div>
-                  <span className="text-[gray]">Total votes: {` `}</span>
-                  {movie?.vote_count}
-                </div> */}
               </div>
             </div>
           </div>

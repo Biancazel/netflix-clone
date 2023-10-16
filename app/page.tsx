@@ -4,6 +4,11 @@ import Banner from "@/components/home/banner/Banner";
 import requests from "@/utils/requests";
 import Row from "@/components/home/row/Row";
 import ModalData from "@/components/home/ModalData";
+import Plans from "./plans/page";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/firebase";
+import { Subscriptions } from "@/components/home/Subscriptions";
+import HomePage from "@/components/home/HomePage";
 
 export const metadata: Metadata = {
   title: "Home - Netflix",
@@ -14,6 +19,26 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
+  const q = query(collection(db, "products"), where("active", "==", true));
+
+  const querySnapshot = await getDocs(q);
+
+  const productPromises = querySnapshot.docs.map(async (productDoc) => {
+    let productInfo = productDoc.data();
+
+    const pricesCollection = collection(productDoc.ref, "prices");
+    const priceQuerySnapshot = await getDocs(pricesCollection);
+
+    const priceDoc = priceQuerySnapshot.docs[0];
+
+    productInfo["priceId"] = priceDoc?.id;
+    productInfo["priceInfo"] = priceDoc?.data();
+
+    return productInfo;
+  });
+
+  const products = await Promise.all(productPromises);
+
   const [
     netflixOriginals,
     trendingNow,
@@ -51,21 +76,18 @@ export default async function Home() {
   ]);
 
   return (
-    <div className="relative h-screen bg-gradient-to-b lg:h-[140vh]">
-      <Header />
-      <main className="relative pl-4 pb-24 lg:space-y-24 lg:pl-16">
-        <Banner netflixOriginals={netflixOriginals.results} />
-        <section className="md:space-y-24">
-          <Row title="Trending Now" movies={trendingNow.results} />
-          <Row title="Top Rated" movies={topRated.results} />
-          <Row title="Comedies" movies={comedyMovies.results} />
-          <Row title="Action" movies={actionMovies.results} />
-          <Row title="Scary Movies" movies={horrorMovies.results} />
-          <Row title="Romance Movies" movies={romanceMovies.results} />
-          <Row title="Animated Movies" movies={animationMovies.results} />
-        </section>
-      </main>
-      <ModalData />
+    <div>
+      <HomePage
+        products={products}
+        netflixOriginals={netflixOriginals.results}
+        trendingNow={trendingNow.results}
+        topRated={topRated.results}
+        comedyMovies={comedyMovies.results}
+        actionMovies={actionMovies.results}
+        horrorMovies={horrorMovies.results}
+        romanceMovies={romanceMovies.results}
+        animationMovies={animationMovies.results}
+      />
     </div>
   );
 }
